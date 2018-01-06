@@ -24,6 +24,7 @@ type GA4GHVariantSpec = {
 
 function create(spec: GA4GHVariantSpec): VcfDataSource {
   var url = spec.endpoint + '/variants/search';
+  var token = spec.token;
 
   var variants: {[key:string]: Variant} = {};
 
@@ -77,6 +78,7 @@ function create(spec: GA4GHVariantSpec): VcfDataSource {
     xhr.open('POST', url);
     xhr.responseType = 'json';
     xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
     xhr.addEventListener('load', function(e) {
       var response = this.response;
@@ -103,7 +105,7 @@ function create(spec: GA4GHVariantSpec): VcfDataSource {
     o.trigger('networkprogress', {numRequests});
     xhr.send(JSON.stringify({
       variantSetId: spec.variantSetId,
-      pageToken: pageToken,
+      pageToken: pageToken || undefined,
       pageSize: VARIANTS_PER_REQUEST,
       referenceName: range.contig,
       callSetIds: spec.callSetIds,

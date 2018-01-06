@@ -35,6 +35,7 @@ type GA4GHSpec = {
 
 function create(spec: GA4GHSpec): AlignmentDataSource {
   var url = spec.endpoint + '/reads/search';
+  var token = spec.token;
 
   var reads: {[key:string]: Alignment} = {};
 
@@ -91,6 +92,7 @@ function create(spec: GA4GHSpec): AlignmentDataSource {
     xhr.open('POST', url);
     xhr.responseType = 'json';
     xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
     xhr.addEventListener('load', function(e) {
       var response = this.response;
@@ -116,16 +118,11 @@ function create(spec: GA4GHSpec): AlignmentDataSource {
 
     o.trigger('networkprogress', {numRequests});
     // hack for DEMO. force GA4GH reference ID
-    var contig = range.contig;
-    if (spec.forcedReferenceId !== null)
-    {
-      contig = spec.forcedReferenceId;
-    }
     xhr.send(JSON.stringify({
-      pageToken: pageToken,
+      pageToken: pageToken || undefined,
       pageSize: ALIGNMENTS_PER_REQUEST,
       readGroupIds: [spec.readGroupId],
-      referenceId: contig,
+      referenceName: range.contig,
       start: range.start(),
       end: range.stop()
     }));
